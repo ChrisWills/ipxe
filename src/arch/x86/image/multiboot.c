@@ -427,6 +427,18 @@ static int multiboot_exec ( struct image *image ) {
 	snprintf ( mb_bootloader_name, sizeof ( mb_bootloader_name ),
 		   "iPXE %s", product_version );
 	mbinfo.boot_loader_name = virt_to_phys ( mb_bootloader_name );
+
+	/*
+	 * Make smartos boot
+	 * The smartos kernel has blacklisted memory 0xc700000 - 0xc7fffff due to some firmware bug.
+	 * https://github.com/joyent/smartos-live/issues/810
+	 * This skips over the blacklisted memory address range so that the disk image is outside the range
+	 */
+
+	if (max < 0xc800000)
+		max = 0xc800000;
+
+
 	if ( ( rc = multiboot_add_modules ( image, max, &mbinfo, mbmodules,
 					    ( sizeof ( mbmodules ) /
 					      sizeof ( mbmodules[0] ) ) ) ) !=0)
